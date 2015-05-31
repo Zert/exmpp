@@ -845,7 +845,12 @@ stream_opened(#xmlstreamelement{element=Packet}, State) ->
     State#state.client_pid ! #received_packet{raw_packet = Packet},
     {next_state, stream_opened, State}.
 
-%% TODO: handle errors
+wait_for_sasl_response(#xmlstreamelement{element=#xmlel{name='failure',
+                                                        children=[#xmlel{name=Failure}]}},
+                       #state{from_pid=From} = State) ->
+    gen_fsm:reply(From, {auth_error, Failure}),
+    {next_state, stream_opened, State};
+
 wait_for_sasl_response(#xmlstreamelement{element=#xmlel{name='success'}}, State) ->
     #state{connection_ref = ConnRef, receiver_ref = ReceiverRef, connection = Module, auth_info = Auth} = State,
     Domain = get_domain(Auth),
