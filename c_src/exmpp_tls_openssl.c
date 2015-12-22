@@ -441,6 +441,7 @@ exmpp_tls_openssl_control(ErlDrvData drv_data, unsigned int command,
 	case COMMAND_GET_PEER_CERTIFICATE:
 		/* Get the peer certificate. */
 		cert = SSL_get_peer_certificate(edd->ssl);
+    int rlen = 0;
 		if (cert == NULL || (rlen = i2d_X509(cert, NULL)) < 0) {
 			to_send = exmpp_new_xbuf();
 			if (to_send == NULL)
