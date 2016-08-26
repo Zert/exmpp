@@ -846,9 +846,19 @@ stream_opened(#xmlstreamelement{element=Packet}, State) ->
     {next_state, stream_opened, State}.
 
 wait_for_sasl_response(#xmlstreamelement{element=#xmlel{name='failure',
-                                                        children=[#xmlel{name=Failure}]}},
+                                                        children=[#xmlel{name=Failure}|Rest]}},
                        #state{from_pid=From} = State) ->
-    gen_fsm:reply(From, {auth_error, Failure}),
+    Reply = case Rest of
+                %% Sometimes we see an extra "text" child.  When that happens, its data
+                %% is a helpful message from the server explaining the failure, i.e.:
+                %% <<"Received ANDROID API key. Only SERVER API keys are accepted.">>
+                %% Include it in our reply when available.
+                [#xmlel{name=text, children=[#xmlcdata{cdata=Text}]}] ->
+                    {auth_error, Failure, Text};
+                _ ->
+                    {auth_error, Failure}
+            end,
+    gen_fsm:reply(From, Reply),
     {next_state, stream_opened, State};
 
 wait_for_sasl_response(#xmlstreamelement{element=#xmlel{name='success'}}, State) ->
