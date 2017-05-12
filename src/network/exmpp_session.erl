@@ -388,8 +388,7 @@ send_packet(Session, Packet) when is_pid(Session) ->
 %%
 %%      See documentation on exmpp_socket and exmpp_bosh to see the supported properties.
 %%      Returns {error, undefined} if the property is not defined for that kind of connection.
--spec(get_connection_property/2 :: 
-        (pid(), atom()) -> {ok, any()} | {error, any()}).
+-spec get_connection_property(pid(), atom()) -> {ok, any()} | {error, any()}.
 get_connection_property(Session, Prop) ->
     gen_fsm:sync_send_all_state_event(Session, {get_connection_property, Prop}).
 
@@ -845,7 +844,22 @@ stream_opened(#xmlstreamelement{element=Packet}, State) ->
     State#state.client_pid ! #received_packet{raw_packet = Packet},
     {next_state, stream_opened, State}.
 
-%% TODO: handle errors
+wait_for_sasl_response(#xmlstreamelement{element=#xmlel{name='failure',
+                                                        children=[#xmlel{name=Failure}|Rest]}},
+                       #state{from_pid=From} = State) ->
+    Reply = case Rest of
+                %% Sometimes we see an extra "text" child.  When that happens, its data
+                %% is a helpful message from the server explaining the failure, i.e.:
+                %% <<"Received ANDROID API key. Only SERVER API keys are accepted.">>
+                %% Include it in our reply when available.
+                [#xmlel{name=text, children=[#xmlcdata{cdata=Text}]}] ->
+                    {auth_error, Failure, Text};
+                _ ->
+                    {auth_error, Failure}
+            end,
+    gen_fsm:reply(From, Reply),
+    {next_state, stream_opened, State};
+
 wait_for_sasl_response(#xmlstreamelement{element=#xmlel{name='success'}}, State) ->
     #state{connection_ref = ConnRef, receiver_ref = ReceiverRef, connection = Module, auth_info = Auth} = State,
     Domain = get_domain(Auth),

@@ -49,7 +49,7 @@
 %%     Dirs = [string()]
 %% @doc Return a list of directories to search port drivers in.
 
--spec(driver_dirs/0 :: () -> [string()]).
+-spec driver_dirs() -> [string()].
 
 driver_dirs() ->
     Mod_Path = case code:is_loaded(?MODULE) of
@@ -85,7 +85,7 @@ driver_dirs() ->
 %% @throws {port_driver, load, Reason, Driver_Name}
 %% @doc Load the port driver `Driver_Name'.
 
--spec(load_driver/1 :: (atom()) -> ok).
+-spec load_driver(atom()) -> ok.
 
 load_driver(Driver_Name) ->
     Dirs = driver_dirs(),
@@ -99,7 +99,7 @@ load_driver(Driver_Name) ->
 %%
 %% The driver is search in `Dirs'.
 
--spec(load_driver/2 :: (atom(), [string()]) -> ok).
+-spec load_driver(atom(), [string()]) -> ok.
 
 load_driver(Driver_Name, Dirs) ->
     load_driver1(Driver_Name, Dirs, undefined).
@@ -121,7 +121,7 @@ load_driver1(Driver_Name, [], Reason) ->
 %%     Driver_Name = atom()
 %% @doc Unload the port driver `Driver_Name'.
 
--spec(unload_driver/1 :: (atom()) -> ok).
+-spec unload_driver(atom()) -> ok.
 
 unload_driver(Driver_Name) ->
     erl_ddll:unload_driver(Driver_Name),
@@ -133,7 +133,7 @@ unload_driver(Driver_Name) ->
 %% @throws {port_driver, open, {posix, Posix_Code}, Driver_Name}
 %% @doc Spawn a new port driver instance.
 
--spec(open_port/1 :: (atom()) -> port()).
+-spec open_port(atom()) -> port().
 
 open_port(Driver_Name) ->
     try
@@ -149,7 +149,7 @@ open_port(Driver_Name) ->
 %%
 %% `Port' was obtained with {@link open_port/1}.
 
--spec(close_port/1 :: (port()) -> true).
+-spec close_port(port()) -> true.
 
 close_port(Port) ->
     erlang:port_close(Port).
@@ -168,8 +168,7 @@ close_port(Port) ->
 %% @doc Wrapper to abstract the `recv' function of multiple communication
 %% modules.
 
--spec(gen_recv/2 ::
-      ({atom(), any()}, integer() | infinity) -> {ok, binary()} | {error, any()}).
+-spec gen_recv({atom(), any()}, integer() | infinity) -> {ok, binary()} | {error, any()}.
 
 gen_recv({gen_tcp, Socket}, Timeout) ->
     gen_tcp:recv(Socket, 0, Timeout);
@@ -185,7 +184,7 @@ gen_recv({Mod, Socket}, Timeout) ->
 %% @doc Wrapper to abstract the `send' function of multiple communication
 %% modules.
 
--spec(gen_send/2 :: ({atom(), any()}, binary()) -> ok | {error, any()}).
+-spec gen_send({atom(), any()}, binary()) -> ok | {error, any()}.
 
 gen_send({Mod, Socket}, Packet) ->
     Mod:send(Socket, Packet).
@@ -199,7 +198,7 @@ gen_send({Mod, Socket}, Packet) ->
 %% @doc Wrapper to abstract the `getopts' function of multiple communication
 %% modules.
 
--spec(gen_getopts/2 :: ({atom(), any()}, list()) -> list() | {error, any()}).
+-spec gen_getopts({atom(), any()}, list()) -> list() | {error, any()}.
 
 gen_getopts({gen_tcp, Socket}, Options) ->
     inet:getopts(Socket, Options);
@@ -214,7 +213,7 @@ gen_getopts({Mod, Socket}, Options) ->
 %% @doc Wrapper to abstract the `setopts' function of multiple communication
 %% modules.
 
--spec(gen_setopts/2 :: ({atom(), any()}, list()) -> ok | {error, any()}).
+-spec gen_setopts({atom(), any()}, list()) -> ok | {error, any()}.
 
 gen_setopts({gen_tcp, Socket}, Options) ->
     inet:setopts(Socket, Options);
@@ -230,7 +229,7 @@ gen_setopts({Mod, Socket}, Options) ->
 %% @doc Wrapper to abstract the `peername' function of multiple communication
 %% modules.
 
--spec(gen_peername/1 :: ({atom(), any()}) -> {ok, any()} | {error, any()}).
+-spec gen_peername({atom(), any()}) -> {ok, any()} | {error, any()}.
 
 gen_peername({gen_tcp, Socket}) ->
     inet:peername(Socket);
@@ -246,7 +245,7 @@ gen_peername({Mod, Socket}) ->
 %% @doc Wrapper to abstract the `sockname' function of multiple communication
 %% modules.
 
--spec(gen_sockname/1 :: ({atom(), any()}) -> {ok, any()} | {error, any()}).
+-spec gen_sockname({atom(), any()}) -> {ok, any()} | {error, any()}.
 
 gen_sockname({gen_tcp, Socket}) ->
     inet:sockname(Socket);
@@ -262,8 +261,7 @@ gen_sockname({Mod, Socket}) ->
 %% @doc Wrapper to abstract the `controlling_process' function of
 %% multiple communication modules.
 
--spec(gen_controlling_process/2 ::
-      ({atom(), any()}, pid()) -> ok | {error, any()}).
+-spec gen_controlling_process({atom(), any()}, pid()) -> ok | {error, any()}.
 
 gen_controlling_process({Mod, Socket}, Pid) ->
     Mod:controlling_process(Socket, Pid).
@@ -275,7 +273,7 @@ gen_controlling_process({Mod, Socket}, Pid) ->
 %% @doc Wrapper to abstract the `close' function of multiple communication
 %% modules.
 
--spec(gen_close/1 :: ({atom(), any()}) -> ok | {error, any()}).
+-spec gen_close({atom(), any()}) -> ok | {error, any()}.
 
 gen_close({Mod, Socket}) ->
     Mod:close(Socket).
