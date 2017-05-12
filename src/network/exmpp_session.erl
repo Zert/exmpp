@@ -388,8 +388,7 @@ send_packet(Session, Packet) when is_pid(Session) ->
 %%
 %%      See documentation on exmpp_socket and exmpp_bosh to see the supported properties.
 %%      Returns {error, undefined} if the property is not defined for that kind of connection.
--spec(get_connection_property/2 :: 
-        (pid(), atom()) -> {ok, any()} | {error, any()}).
+-spec get_connection_property(pid(), atom()) -> {ok, any()} | {error, any()}.
 get_connection_property(Session, Prop) ->
     gen_fsm:sync_send_all_state_event(Session, {get_connection_property, Prop}).
 
